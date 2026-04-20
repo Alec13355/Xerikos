@@ -1,10 +1,40 @@
 "use client";
 
+import { useState } from "react";
+
+interface FormState {
+  firstName: string;
+  lastName: string;
+  email: string;
+  company: string;
+  message: string;
+}
+
+const empty: FormState = { firstName: "", lastName: "", email: "", company: "", message: "" };
+
 export default function Contact() {
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const [form, setForm] = useState<FormState>(empty);
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // TODO: wire up form submission (e.g. email service or API endpoint)
-    alert("Thanks for reaching out! We'll be in touch soon.");
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Request failed");
+      setStatus("success");
+      setForm(empty);
+    } catch {
+      setStatus("error");
+    }
   }
 
   return (
@@ -81,66 +111,106 @@ export default function Contact() {
 
             {/* Right: Contact form */}
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-              <form className="space-y-5" onSubmit={handleSubmit}>
-                <div className="grid sm:grid-cols-2 gap-5">
+              {status === "success" ? (
+                <div className="flex flex-col items-center justify-center h-full py-12 text-center">
+                  <div className="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
+                    <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Message sent!</h3>
+                  <p className="text-slate-300 text-sm">We&apos;ll be in touch soon.</p>
+                  <button
+                    onClick={() => setStatus("idle")}
+                    className="mt-6 text-blue-400 text-sm hover:text-blue-300 transition-colors"
+                  >
+                    Send another message
+                  </button>
+                </div>
+              ) : (
+                <form className="space-y-5" onSubmit={handleSubmit}>
+                  <div className="grid sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={form.firstName}
+                        onChange={handleChange}
+                        placeholder="Alex"
+                        required
+                        className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={form.lastName}
+                        onChange={handleChange}
+                        placeholder="Johnson"
+                        className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      />
+                    </div>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      First Name
+                      Email
                     </label>
                     <input
-                      type="text"
-                      placeholder="Alex"
+                      type="email"
+                      name="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      placeholder="alex@company.com"
+                      required
                       className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Last Name
+                      Company
                     </label>
                     <input
                       type="text"
-                      placeholder="Johnson"
+                      name="company"
+                      value={form.company}
+                      onChange={handleChange}
+                      placeholder="Acme Corp"
                       className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="alex@company.com"
-                    className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Company
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Acme Corp"
-                    className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    How can we help?
-                  </label>
-                  <textarea
-                    rows={4}
-                    placeholder="Tell us about your project, goals, or challenges..."
-                    className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-xl text-sm transition-all hover:shadow-lg hover:shadow-blue-600/25"
-                >
-                  Send Message
-                </button>
-              </form>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      How can we help?
+                    </label>
+                    <textarea
+                      name="message"
+                      value={form.message}
+                      onChange={handleChange}
+                      rows={4}
+                      required
+                      placeholder="Tell us about your project, goals, or challenges..."
+                      className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
+                    />
+                  </div>
+                  {status === "error" && (
+                    <p className="text-red-400 text-sm">Something went wrong. Please try again.</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={status === "loading"}
+                    className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl text-sm transition-all hover:shadow-lg hover:shadow-blue-600/25"
+                  >
+                    {status === "loading" ? "Sending…" : "Send Message"}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>
