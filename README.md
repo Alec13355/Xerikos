@@ -1,31 +1,49 @@
-# Xerikos LLC — Landing Page
+# Xerikos — landing page
 
-Marketing landing page for [Xerikos LLC](https://xerikos.com) — we help companies build world-class products with AI and solid software engineering at the highest quality.
+React + Vite + Tailwind v4 + Framer Motion. Static build, deploys to Cloudflare Pages.
 
-Built with [Next.js](https://nextjs.org), [TypeScript](https://www.typescriptlang.org/), and [Tailwind CSS](https://tailwindcss.com).
-
-## Getting Started
-
+## Run locally
 ```bash
 npm install
-npm run dev
+npm run dev      # http://localhost:5173
+npm run build    # outputs to dist/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the site.
+## Edit the content you'll actually want to change
+Open `src/App.jsx` — the first block at the top:
+```js
+const EMAIL    = 'hello@xerikos.com'                       // <- your email
+const LINKEDIN = 'https://www.linkedin.com/in/your-handle' // <- your LinkedIn
+const OWNER    = 'Alec Harrison'
+```
+The three olive credential chips in the About section (`Microsoft MVP` etc.)
+are marked `.edit` in `src/App.jsx` — keep, change, or delete them.
+Copy lives in plain text in `src/App.jsx`; colors/type in `src/index.css` (`:root`).
 
-## Sections
+## Deploy to Cloudflare Pages
 
-- **Hero** — Main headline, CTA buttons, and key proof points
-- **Services** — AI Integration, Full-Stack Engineering, Technical Strategy, Quality Engineering, Cloud & Infrastructure, Team Augmentation
-- **About** — Company mission and core values
-- **Process** — Five-step delivery process
-- **Contact** — Inquiry form and contact details
-- **Footer** — Site navigation and legal links
+**Option A — connect a Git repo (auto-deploys on push):**
+1. Push this folder to GitHub/GitLab.
+2. Cloudflare dashboard → Workers & Pages → Create → Pages → Connect to Git.
+3. Build command: `npm run build`  ·  Build output directory: `dist`
+4. Deploy. Add your custom domain (e.g. xerikos.com) under the project's Custom domains tab.
 
-## Deploy
-
-The easiest way to deploy is on [Vercel](https://vercel.com/new):
-
+**Option B — direct upload (no Git):**
 ```bash
 npm run build
+npx wrangler pages deploy dist --project-name xerikos
+```
+Or drag the `dist/` folder into Cloudflare Pages → Create → Upload assets.
+
+## Using the real Motion Primitives / Watermelon UI components
+This project is built on the same stack both libraries use (React + Tailwind +
+Framer Motion), and the animated pieces are written in their idiom:
+- `src/components/TextReveal.jsx`  ≈ Motion Primitives `TextEffect`
+- `src/components/Reveal.jsx`       ≈ Motion Primitives `InView`
+- `src/components/ServiceCard.jsx`  ≈ a Watermelon UI spotlight card
+
+To pull the official components (run locally, where their registries are reachable):
+```bash
+npx motion-primitives@latest add text-effect in-view
+npx shadcn@latest add "https://registry.watermelon.sh/r/<component>.json"
 ```
